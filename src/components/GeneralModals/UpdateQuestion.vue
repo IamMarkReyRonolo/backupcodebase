@@ -15,20 +15,19 @@
 					<v-spacer></v-spacer>
 				</v-toolbar>
 
-				<Update :data="question" @closeUpdate="closeUpdate" />
+				<Update @closeUpdate="closeUpdate" />
 			</v-card>
 		</v-dialog>
 	</v-row>
 </template>
 
 <script>
-	import Update from "../../views/Admin/StaffUpdateQuestion.vue";
+	import Update from "../../views/Admin/UpdateQuestion.vue";
 	import UpdateQuestion from "../StaffComponents/UpdateQuestionComponents/UpdateQuestion.vue";
-
+	import { useQuestionStore } from "../../store/QuestionStore";
 	export default {
 		props: {
 			updateDialog: Boolean,
-			question: Object,
 		},
 		created() {
 			this.dialog = this.updateDialog;
@@ -42,6 +41,7 @@
 			return {
 				updatedQuestion: {},
 				dialog: false,
+				questionStore: useQuestionStore(),
 			};
 		},
 
@@ -56,6 +56,13 @@
 				if (!this.dialog) {
 					this.$emit("closeUpdate", "close");
 				}
+			},
+
+			"questionStore.updateSuccess"() {
+				this.$emit("closeUpdate", "close");
+			},
+			"questionStore.createSuccess"() {
+				this.$emit("closeUpdate", "close");
 			},
 		},
 	};

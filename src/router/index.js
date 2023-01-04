@@ -5,7 +5,8 @@ import StaffMainPage from "../views/Admin/StaffMainPage.vue";
 import StaffDashboard from "../views/Admin/StaffDashboard.vue";
 import StaffPeople from "../views/Admin/StaffPeople.vue";
 import StaffViewQuestions from "../views/Admin/StaffViewQuestions.vue";
-
+import StaffPendingQuestions from "../views/Admin/StaffPendingQuestions.vue";
+import StaffCreateQuestions from "../views/Admin/StaffCreateQuestions.vue";
 import NotFoundPage from "../components/UtilityComponents/NotFoundPage.vue";
 Vue.use(VueRouter);
 
@@ -37,6 +38,24 @@ const routes = [
 				path: "questions",
 				name: "questions",
 				component: StaffViewQuestions,
+				props: {
+					header: true,
+					content: true,
+				},
+			},
+			{
+				path: "pending",
+				name: "pending",
+				component: StaffPendingQuestions,
+				props: {
+					header: true,
+					content: true,
+				},
+			},
+			{
+				path: "question_creation",
+				name: "question_creation",
+				component: StaffCreateQuestions,
 				props: {
 					header: true,
 					content: true,

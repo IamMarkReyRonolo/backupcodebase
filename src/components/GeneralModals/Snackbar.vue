@@ -33,7 +33,7 @@
 		data() {
 			return {
 				multiLine: true,
-				timeout: 7000,
+				timeout: 5000,
 				activator: false,
 			};
 		},

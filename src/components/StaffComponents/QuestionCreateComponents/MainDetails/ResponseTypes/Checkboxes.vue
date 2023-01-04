@@ -10,7 +10,7 @@
 
 			<div
 				class="choice"
-				v-for="(choice, index) in questionStore.updatedQuestion.options"
+				v-for="(choice, index) in questionStore.createQuestion.options"
 				:key="index"
 			>
 				<v-checkbox
@@ -38,7 +38,7 @@
 					</div>
 				</div>
 
-				<div class="addChoiceImg">
+				<!-- <div class="addChoiceImg">
 					<div class="imgPresent">
 						<img
 							:src="choice.image"
@@ -75,6 +75,54 @@
 						style="display: none"
 						@change="imageFile"
 					/>
+				</div> -->
+
+				<div class="addImgCon">
+					<div class="imgPresent">
+						<div class="imgContainer" v-if="choice.image != ''">
+							<img :src="choice.image" alt="" v-if="choice.image != ''" />
+						</div>
+
+						<div style="text-align: center">
+							<div
+								@click="addFile(index)"
+								v-if="choice.image == ''"
+								class="addImage"
+								id="addQuestionImage"
+							>
+								<div>
+									<v-icon color="#5a6882" v-if="choice.image == ''"
+										>mdi-image</v-icon
+									>
+								</div>
+							</div>
+
+							<div class="moreControlBtns" v-if="choice.image != ''">
+								<v-btn
+									fab
+									x-small
+									class="primary imageControlBtns"
+									@click="addFile(index)"
+									><v-icon size="15">mdi-pencil</v-icon></v-btn
+								>
+								<v-btn
+									fab
+									x-small
+									class="error imageControlBtns"
+									@click="choice.image = ''"
+									><v-icon size="15">mdi-close</v-icon></v-btn
+								>
+							</div>
+						</div>
+					</div>
+
+					<input
+						type="file"
+						accept="image/*"
+						ref="fileInputChoices"
+						style="display: none"
+						@change="imageFile"
+					/>
 				</div>
 
 				<v-btn
@@ -82,7 +130,7 @@
 					x-small
 					color="error"
 					@click="deleteMultipleChoiceOption(index)"
-					:disabled="questionStore.updatedQuestion.options.length == 1"
+					:disabled="questionStore.createQuestion.options.length == 1"
 					:id="'deleteBtn-Option' + choice.letter"
 					><v-icon>mdi-delete</v-icon></v-btn
 				>
@@ -108,15 +156,15 @@
 </template>
 
 <script>
-	import AddEquationModal from "../AddEquationModal.vue";
-	import { useQuestionStore } from "../../../../store/QuestionStore";
+	import AddEquationModal from ".././addEquation/AddEquationModal";
+	import { useQuestionStore } from "../../../../../store/QuestionStore";
 	export default {
 		components: {
 			AddEquationModal,
 		},
 
 		async created() {
-			// for (let i = 0; i < this.questionStore.updatedQuestion.options.length; i++) {
+			// for (let i = 0; i < this.questionStore.createQuestion.options.length; i++) {
 			// 	if (this.multipleChoices[i].image != "") {
 			// 		let image = await fetch(this.multipleChoices[i].image).then((r) =>
 			// 			r.blob()
@@ -129,44 +177,50 @@
 			// 	}
 			// }
 
-			if (this.questionStore.updatedQuestion.options.length < 2) {
-				this.questionStore.updatedQuestion.options.push({
+			if (this.questionStore.createQuestion.options.length < 2) {
+				this.questionStore.createQuestion.options.push({
 					letter: "B",
 					content: "",
 					image: "",
 					is_answer: false,
 				});
+				this.questionStore.createQuestion.options[0].letter = "A";
+				this.questionStore.createQuestion.options[0].unit = "";
+				this.questionStore.createQuestion.options[1].unit = "";
 			}
 
-			this.questionStore.updatedQuestion.options[0].unit = "";
-			this.questionStore.updatedQuestion.options[1].unit = "";
+			this.questionStore.createQuestion.options.forEach((choice) => {
+				if (choice.is_answer) {
+					this.selected.push(choice.letter);
+				}
+			});
 		},
 		data: () => ({
 			questionStore: useQuestionStore(),
 			dialog: false,
 			insertText: "",
 			indexLoc: -1,
-			selected: ["A"],
+			selected: [],
 			required: [(v) => !!v || "Required"],
 		}),
 		methods: {
 			addMultipleChoiceOption() {
 				const option = {
 					letter: String.fromCharCode(
-						65 + this.questionStore.updatedQuestion.options.length
+						65 + this.questionStore.createQuestion.options.length
 					),
 					content: "",
 					image: "",
 					is_answer: false,
 				};
 
-				this.questionStore.updatedQuestion.options.push(option);
+				this.questionStore.createQuestion.options.push(option);
 			},
 
 			deleteMultipleChoiceOption(index) {
-				this.questionStore.updatedQuestion.options.splice(index, 1);
+				this.questionStore.createQuestion.options.splice(index, 1);
 				let start = 65;
-				this.questionStore.updatedQuestion.options.forEach((choice) => {
+				this.questionStore.createQuestion.options.forEach((choice) => {
 					choice.letter = String.fromCharCode(start++);
 				});
 			},
@@ -175,14 +229,12 @@
 				if (file && this.indexLoc != -1) {
 					let files = file.target.files;
 					if (files.length == 0) {
-						this.questionStore.updatedQuestion.options[this.indexLoc].image =
-							"";
 					} else {
 						let fileName = files[0].name;
 						const reader = new FileReader();
 						reader.readAsDataURL(files[0]);
 						reader.onloadend = () => {
-							this.questionStore.updatedQuestion.options[this.indexLoc].image =
+							this.questionStore.createQuestion.options[this.indexLoc].image =
 								reader.result;
 						};
 					}
@@ -224,7 +276,7 @@
 				const before = sentence.substr(0, pos);
 				const after = sentence.substr(pos, len);
 
-				this.questionStore.updatedQuestion.options[this.indexLoc].content =
+				this.questionStore.createQuestion.options[this.indexLoc].content =
 					before + insertText + after;
 
 				this.$nextTick().then(() => {
@@ -235,7 +287,7 @@
 
 		computed: {
 			listenForAnswer: function () {
-				this.questionStore.updatedQuestion.options.forEach((choice) => {
+				this.questionStore.createQuestion.options.forEach((choice) => {
 					if (this.selected.includes(choice.letter)) {
 						choice.is_answer = true;
 					} else {
@@ -273,7 +325,6 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-top: -25px;
 	}
 
 	.addChoiceImg {
@@ -282,30 +333,35 @@
 		justify-content: center;
 		align-items: flex-start;
 		padding-bottom: 10px;
-		margin-top: 20px;
+		margin-top: 0px;
 	}
 
-	.imgPresent {
+	.addImgCon {
+		width: 20%;
 		display: flex;
 		justify-content: center;
-		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 	}
 
 	.addImage {
 		cursor: pointer;
-		padding: 5px 10px;
-		font-size: 12px;
-		border-radius: 5px;
+		padding: 10px;
+		border-radius: 10px;
 		color: #4b5a76;
 		background-color: #f5f5f5;
 		font-weight: 500;
+		width: 70px;
+		height: 70px;
 		box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%),
 			0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
 		transition-duration: 0.28s;
 		transition-property: box-shadow, transform, opacity;
 		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-		margin-top: -20px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		margin-top: -10px;
 	}
 
 	.changeImage {
@@ -318,6 +374,39 @@
 		border-radius: 2px;
 	}
 
+	.imgPresent {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+	}
+
+	.imgContainer {
+		border-radius: 10px;
+		padding: 10px;
+		border-radius: 10px;
+		color: #4b5a76;
+		background-color: #f5f5f5;
+		box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%),
+			0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
+		transition-duration: 0.28s;
+		transition-property: box-shadow, transform, opacity;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.moreControlBtns {
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		width: 100px;
+		padding: 5px 10px;
+	}
+
+	img {
+		width: 80px;
+		height: 80px;
+	}
+
 	.addAnotherCon {
 		padding: 0px 40px;
 	}
@@ -326,6 +415,18 @@
 		display: none;
 		margin-top: -20px;
 		margin-bottom: 30px;
+	}
+
+	.field {
+		color: #4c5b77;
+		padding: 20px;
+	}
+
+	.fieldLabel {
+		padding-bottom: 20px;
+		font-weight: bold;
+		font-size: 14px;
+		color: #4c5b77;
 	}
 
 	@media only screen and (max-width: 1200px) {
@@ -342,22 +443,27 @@
 		}
 
 		img {
-			width: 100px;
+			width: 60px;
+			height: 60px;
 		}
+
+		.imgContainer {
+			padding: 10px;
+		}
+
 		.addImage {
-			padding: 5px 10px;
+			padding: 10px;
 			border-radius: 5px;
-			font-size: 10px;
-			margin-top: -20px;
+			font-size: 12px;
 		}
 
 		.changeImage {
-			font-size: 8px;
+			font-size: 10px;
 			display: flex;
 			justify-content: center;
 			align-items: center;
 			padding: 5px;
-			margin: 0px 0px;
+			margin: 5px 0px;
 			border-radius: 2px;
 		}
 	}
@@ -375,10 +481,9 @@
 		}
 
 		.addImage {
-			padding: 10px;
-			border-radius: 5px;
-			font-size: 16px;
-			margin-top: -20px;
+			width: 50px;
+			height: 50px;
+			margin-top: -50px;
 		}
 
 		.changeImage {
@@ -392,7 +497,13 @@
 		}
 
 		img {
-			width: 75px;
+			width: 60px;
+			height: 60px;
+		}
+
+		.imgContainer {
+			padding: 5px;
+			margin-top: 0px;
 		}
 	}
 
@@ -402,33 +513,33 @@
 		}
 
 		.addImage {
-			padding: 8px;
+			padding: 10px 20px;
 			border-radius: 5px;
-			font-size: 12px;
-			margin-top: -20px;
-			border-radius: 5px;
-			color: #4b5a76;
-			background-color: transparent;
-			font-weight: 500;
-			box-shadow: none;
-			transition-duration: 0.28s;
-			transition-property: none;
-			transition-timing-function: none;
+			font-size: 24px;
+			width: 40px;
+			height: 40px;
+			margin-top: -45px;
 		}
 
 		.changeImage {
-			font-size: 8px;
+			font-size: 12px;
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			padding: 0px;
+			padding: 4px;
 			margin: 5px 0px;
 			border-radius: 2px;
+			margin-bottom: 20px;
 		}
 
 		img {
-			width: 60px;
-			height: 60px;
+			width: 40px;
+			height: 40px;
+		}
+
+		.imgContainer {
+			padding: 10px;
+			margin-top: 0px;
 		}
 	}
 </style>
