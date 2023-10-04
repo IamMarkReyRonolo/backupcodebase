@@ -3,8 +3,8 @@
 		<div class="resultsList">
 			<v-expansion-panels
 				focusable
-				:flat="true"
 				:mandatory="questionStore.openPanel"
+				:flat="true"
 			>
 				<v-expansion-panel v-for="(question, i) in getQuestions" :key="i">
 					<v-expansion-panel-header
@@ -45,9 +45,7 @@
 							<div class="details">
 								<div class="detail">
 									<div class="label">Release Date</div>
-									<div class="value">
-										{{ question.metadata.release_date }}
-									</div>
+									<div class="value">{{ question.metadata.release_date }}</div>
 								</div>
 								<div class="detail">
 									<div class="label">Grade Level</div>
@@ -190,13 +188,11 @@
 						<div class="questionContent" v-if="render">
 							<br />
 							<div class="question">
-								<div class="questionTitle">Question:</div>
-								<div class="questionContentCon">
-									<vue-mathjax
-										:formula="question.question_content"
-										v-if="render"
-									></vue-mathjax>
-								</div>
+								<span style="padding: 0px 10px">Question:</span>
+								<vue-mathjax
+									:formula="question.question_content"
+									v-if="render"
+								></vue-mathjax>
 							</div>
 							<div class="imgQuestion" v-if="question.question_img">
 								<img :src="question.question_img" alt="" />
@@ -208,18 +204,16 @@
 									v-for="(option, i) in question.options"
 									:key="i"
 								>
-									<div class="answerTitleCon">Answer:</div>
-									<div class="answerContentCon">
-										<span style="padding: 0px 5px"
-											><vue-mathjax :formula="option.content"></vue-mathjax
-										></span>
-										<span
-											><vue-mathjax :formula="option.unit"></vue-mathjax
-										></span>
-										<span style="padding: 0px 10px" v-if="option.is_answer"
-											><strong>Correct Answer</strong></span
-										>
-									</div>
+									<span style="padding-left: 20px">Answer: </span>
+									<span style="padding: 0px 5px"
+										><vue-mathjax :formula="option.content"></vue-mathjax
+									></span>
+									<span
+										><vue-mathjax :formula="option.unit"></vue-mathjax
+									></span>
+									<span style="padding: 0px 10px" v-if="option.is_answer"
+										><strong>Correct Answer</strong></span
+									>
 								</div>
 							</div>
 
@@ -250,7 +244,6 @@
 									question.response_type == 'Multiple Choice' ||
 									question.response_type == 'Checkboxes'
 								"
-								class="itemChoices"
 							>
 								<div
 									class="options"
@@ -338,6 +331,7 @@
 
 		<UpdateQuestion
 			:updateDialog="updateDialog"
+			:question="question"
 			v-if="updateDialog"
 			@closeUpdate="closeUpdate"
 		/>
@@ -392,9 +386,9 @@
 			},
 			async deleteQuestion() {
 				this.loadingDialog = true;
+				this.deleteDialog = false;
 				await this.questionStore.deleteQuestion(this.question_id);
 				this.loadingDialog = false;
-				this.deleteDialog = false;
 			},
 
 			updateQuestion(parameters) {
@@ -404,7 +398,7 @@
 
 			activateUpdateDialog(question) {
 				this.updateDialog = true;
-				this.questionStore.chosenQuestion = question;
+				this.question = question;
 				this.render = false;
 			},
 
@@ -450,6 +444,7 @@
 		computed: {
 			getQuestions: function () {
 				this.questions = this.questionStore.fetchedQuestions.slice();
+				console.log(this.questions);
 				return this.questions;
 			},
 		},
@@ -505,34 +500,11 @@
 	/*  */
 
 	.question {
-		padding: 10px;
+		padding: 10px 20px;
 	}
-
-	.question .questionTitle,
-	.answerTitleCon {
-		font-weight: bold;
-		font-size: 19px;
-		padding: 10px;
-	}
-
-	.question .questionContentCon,
-	.answerContentCon {
-		font-weight: 500;
-		font-size: 18px;
-		padding: 10px;
-	}
-
-	/* .itemChoices {
-		display: flex;
-		justify-content: flex-start;
-		align-items: flex-start;
-		flex-wrap: wrap;
-		width: 800px;
-	} */
 
 	.options {
 		padding: 5px 10px;
-		font-size: 18px;
 	}
 
 	.questionContent {
@@ -569,29 +541,21 @@
 		height: 10px;
 	}
 
-	.imgQuestion,
+	.imgQuestion {
+		text-align: center;
+	}
+
 	.optionQuestion {
-		width: 300px;
-		margin: 10px;
-		margin-bottom: 40px;
-		border-radius: 10px;
-		color: #4b5a76;
-		background-color: #dfdfdf;
-		box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%),
-			0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
-		transition-duration: 0.28s;
-		transition-property: box-shadow, transform, opacity;
-		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		text-align: left;
+		padding: 20px;
 	}
 
 	.optionQuestion img {
-		width: 300px;
-		padding: 10px;
+		width: 400px;
 	}
 
 	.imgQuestion img {
-		width: 300px;
-		padding: 10px;
+		width: 400px;
 	}
 
 	.clickedHeader {
@@ -605,14 +569,6 @@
 
 	.v-expansion-panel-header {
 		transition: 0.2s ease-in-out;
-	}
-
-	.fade-enter-active,
-	.fade-leave-active {
-		transition: opacity 0.1s;
-	}
-	.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-		opacity: 0;
 	}
 
 	@media only screen and (max-width: 850px) {

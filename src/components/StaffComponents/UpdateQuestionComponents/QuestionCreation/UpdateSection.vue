@@ -10,28 +10,18 @@
 
 					<v-expansion-panel-content>
 						<div class="field">
-							<div
-								class="noPreview"
-								id="noPreview"
-								v-if="!questionStore.updatedQuestion.question_content"
-							>
+							<div class="noPreview" id="noPreview" v-if="!question">
 								No Preview
 							</div>
-							<div
-								class="preview"
-								v-if="questionStore.updatedQuestion.question_content"
-								id="hasPreview"
-							>
+							<div class="preview" v-if="question" id="hasPreview">
 								<div class="fieldLabel">Question:</div>
 								<div>
 									<vue-mathjax
-										:formula="
-											questionStore.updatedQuestion.question_contents + ' '
-										"
+										:formula="question + ' '"
 										v-if="count % 2 == 0"
 									></vue-mathjax>
 									<vue-mathjax
-										:formula="questionStore.updatedQuestion.question_content"
+										:formula="question"
 										v-if="count % 2 != 0"
 									></vue-mathjax>
 									<div style="margin: 10px auto; width: 200px">
@@ -44,10 +34,8 @@
 								<div
 									class="fieldLabel"
 									v-if="
-										questionStore.updatedQuestion.response_type ==
-											'Open Response Exact' ||
-										questionStore.updatedQuestion.response_type ==
-											'Range Open Response'
+										selectedResponse == 'Open Response Exact' ||
+										selectedResponse == 'Range Open Response'
 									"
 								>
 									Answer:
@@ -55,9 +43,8 @@
 								<div
 									class="fieldLabel"
 									v-if="
-										questionStore.updatedQuestion.response_type ==
-											'Multiple Choice' ||
-										questionStore.updatedQuestion.response_type == 'Checkboxes'
+										selectedResponse == 'Multiple Choice' ||
+										selectedResponse == 'Checkboxes'
 									"
 								>
 									Options:
@@ -65,16 +52,13 @@
 
 								<div
 									class="answerCon"
-									v-for="(value, index) in questionStore.updatedQuestion
-										.options"
+									v-for="(value, index) in options"
 									:key="index"
 								>
 									<div
 										v-if="
-											questionStore.updatedQuestion.response_type ==
-												'Multiple Choice' ||
-											questionStore.updatedQuestion.response_type ==
-												'Checkboxes'
+											selectedResponse == 'Multiple Choice' ||
+											selectedResponse == 'Checkboxes'
 										"
 									>
 										<div>
@@ -114,12 +98,7 @@
 										</div>
 									</div>
 									<div>
-										<div
-											v-if="
-												questionStore.updatedQuestion.response_type ==
-												'Open Response Exact'
-											"
-										>
+										<div v-if="selectedResponse == 'Open Response Exact'">
 											<vue-mathjax
 												:formula="value.content + ' '"
 												v-if="value.content && count % 2 == 0"
@@ -139,12 +118,7 @@
 												style="margin: 0px 15px"
 											></vue-mathjax>
 										</div>
-										<div
-											v-if="
-												questionStore.updatedQuestion.response_type ==
-												'Range Open Response'
-											"
-										>
+										<div v-if="selectedResponse == 'Range Open Response'">
 											<span style="font-weight: bold" v-if="index == 0"
 												>Min:
 											</span>
@@ -186,7 +160,7 @@
 				<div class="selectType">
 					<v-select
 						:items="responseTypes"
-						v-model="questionStore.updatedQuestion.response_type"
+						v-model="selectedResponse"
 						filled
 						dense
 						@change="count++"
@@ -211,7 +185,7 @@
 							row-height="20"
 							@keydown.enter.alt.exact.prevent="doSomething"
 							ref="textarea"
-							v-model="questionStore.updatedQuestion.question_content"
+							v-model="question"
 							:rules="required"
 							id="inputQuestionField"
 						></v-textarea>
@@ -265,22 +239,24 @@
 
 			<div v-if="!reset">
 				<OpenResponseExact
-					v-if="
-						questionStore.updatedQuestion.response_type == 'Open Response Exact'
-					"
+					v-if="selectedResponse == 'Open Response Exact'"
+					:options="options"
+					@updateOptions="updateOptions"
 				/>
 				<OpenResponseRange
-					v-if="
-						questionStore.updatedQuestion.response_type == 'Range Open Response'
-					"
+					v-if="selectedResponse == 'Range Open Response'"
+					:options="options"
+					@updateOptions="updateOptions"
 				/>
 				<MultipleChoice
-					v-if="
-						questionStore.updatedQuestion.response_type == 'Multiple Choice'
-					"
+					v-if="selectedResponse == 'Multiple Choice'"
+					:options="options"
+					@updateOptions="updateOptions"
 				/>
 				<Checkboxes
-					v-if="questionStore.updatedQuestion.response_type == 'Checkboxes'"
+					v-if="selectedResponse == 'Checkboxes'"
+					:options="options"
+					@updateOptions="updateOptions"
 				/>
 			</div>
 
@@ -307,7 +283,6 @@
 	import OpenResponseRange from "./OpenResponseRange.vue";
 	import MultipleChoice from "./MultipleChoice.vue";
 	import Checkboxes from "./Checkboxes.vue";
-	import { useQuestionStore } from "../../../../store/QuestionStore";
 	export default {
 		components: {
 			AddEquationModal,
@@ -327,15 +302,6 @@
 			try {
 				this.loading = true;
 				this.fetched = false;
-				// this.questionBasicDetails = Object.keys(
-				// 	this.questionStore.chosenQuestion
-				// ).reduce((obj, k) => {
-				// 	if (k != "metadata") {
-				// 		obj[k] = this.questionStore.chosenQuestion[k];
-				// 		return obj;
-				// 	}
-				// }, {});
-
 				this.selectedResponse = this.question_main_details.response_type;
 				this.question = this.question_main_details.question_content;
 
@@ -357,8 +323,6 @@
 		},
 		data() {
 			return {
-				questionStore: useQuestionStore(),
-				questionBasicDetails: {},
 				dialog: false,
 				insertText: "",
 				responseTypes: [
@@ -421,8 +385,7 @@
 				const before = sentence.substr(0, pos);
 				const after = sentence.substr(pos, len);
 
-				this.questionStore.updatedQuestion.question_content =
-					before + insertText + after;
+				this.question = before + insertText + after;
 
 				this.$nextTick().then(() => {
 					textarea.selectionStart = pos + insertText.length;

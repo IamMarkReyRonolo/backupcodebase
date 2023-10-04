@@ -50,14 +50,6 @@
 		>
 			<Loading />
 		</div>
-
-		<Snackbar
-			:snackbar="snackbar"
-			:message="message"
-			:status="status"
-			v-if="snackbar"
-			@closeSnackbar="snackbar = false"
-		/>
 	</div>
 </template>
 
@@ -68,7 +60,6 @@
 	import Error from "../../UtilityComponents/Error.vue";
 	import NotFoundSource from "../../UtilityComponents/NotFoundSource.vue";
 	import { useQuestionStore } from "../../../store/QuestionStore";
-	import Snackbar from "../../GeneralModals/Snackbar.vue";
 	export default {
 		components: {
 			QuestionSection,
@@ -76,15 +67,11 @@
 			Loading,
 			Error,
 			NotFoundSource,
-			Snackbar,
 		},
 		data: () => ({
 			questionStore: useQuestionStore(),
 			sorted: false,
 			page: 1,
-			snackbar: false,
-			message: "",
-			status: "",
 		}),
 		watch: {
 			page() {
@@ -92,33 +79,10 @@
 				document.body.scrollTop = 0; // For Safari
 				document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 			},
-			"questionStore.updateSuccess"() {
-				if (this.questionStore.updateSuccess == true) {
-					this.refresh();
-					this.questionStore.updateSuccess = false;
-
-					this.message = "Successfully updated question";
-					this.snackbar = true;
-					this.status = "Success";
-				}
-			},
-
-			"questionStore.createSuccess"() {
-				if (this.questionStore.createSuccess == true) {
-					this.refresh();
-					this.questionStore.createSuccess = false;
-
-					this.message = "Successfully created question";
-					this.snackbar = true;
-					this.status = "Success";
-				}
-			},
 		},
 		methods: {
 			refresh() {
 				this.questionStore.getQuestions();
-				document.body.scrollTop = 0; // For Safari
-				document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 			},
 		},
 		computed: {

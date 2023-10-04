@@ -10,12 +10,13 @@
 
 			<div
 				class="choice"
-				v-for="(choice, index) in questionStore.updatedQuestion.options"
+				v-for="(choice, index) in multipleChoices"
 				:key="index"
 			>
 				<v-checkbox
 					v-model="selected"
 					:value="choice.letter"
+					@click="updateProp"
 					:id="'selectLetter' + choice.letter"
 				></v-checkbox>
 
@@ -29,6 +30,7 @@
 							@keydown.enter.alt.exact.prevent="doSomething(index)"
 							ref="textarea"
 							v-model="choice.content"
+							@keyup="updateProp"
 							:rules="required"
 							:id="'inputOption-Checkbox-Letter' + choice.letter"
 						></v-textarea>
@@ -47,6 +49,16 @@
 							v-if="choice.image != ''"
 						/>
 						<div style="text-align: center">
+							<!-- <v-btn
+								@click="addFile(index)"
+								:x-small="choice.image == '' ? false : true"
+								style="margin-top: -10px"
+								:id="'addImage-Option' + choice.letter"
+								><v-icon>mdi-image</v-icon>
+								<span v-if="choice.image == ''">Add Image</span
+								><span v-if="choice.image != ''">Change Image</span></v-btn
+							> -->
+
 							<div
 								@click="addFile(index)"
 								:class="
@@ -82,7 +94,7 @@
 					x-small
 					color="error"
 					@click="deleteMultipleChoiceOption(index)"
-					:disabled="questionStore.updatedQuestion.options.length == 1"
+					:disabled="multipleChoices.length == 1"
 					:id="'deleteBtn-Option' + choice.letter"
 					><v-icon>mdi-delete</v-icon></v-btn
 				>
@@ -109,28 +121,33 @@
 
 <script>
 	import AddEquationModal from "../AddEquationModal.vue";
-	import { useQuestionStore } from "../../../../store/QuestionStore";
 	export default {
 		components: {
 			AddEquationModal,
 		},
-
+		props: {
+			options: Array,
+		},
+		
 		async created() {
-			// for (let i = 0; i < this.questionStore.updatedQuestion.options.length; i++) {
-			// 	if (this.multipleChoices[i].image != "") {
-			// 		let image = await fetch(this.multipleChoices[i].image).then((r) =>
-			// 			r.blob()
-			// 		);
-			// 		const reader = new FileReader();
-			// 		reader.readAsDataURL(image);
-			// 		reader.onloadend = () => {
-			// 			this.multipleChoices[i].image = reader.result;
-			// 		};
-			// 	}
-			// }
+			this.multipleChoices = this.options.slice();
 
-			if (this.questionStore.updatedQuestion.options.length < 2) {
-				this.questionStore.updatedQuestion.options.push({
+			for (let i = 0; i < this.multipleChoices.length; i++) {
+				if (this.multipleChoices[i].image != "") {
+				
+					let image = await fetch(this.multipleChoices[i].image).then((r) =>
+						r.blob()
+					);
+					const reader = new FileReader();
+					reader.readAsDataURL(image);
+					reader.onloadend = () => {
+						this.multipleChoices[i].image = reader.result;
+					};
+				}
+			}
+
+			if (this.multipleChoices.length < 2) {
+				this.multipleChoices.push({
 					letter: "B",
 					content: "",
 					image: "",
@@ -138,35 +155,44 @@
 				});
 			}
 
-			this.questionStore.updatedQuestion.options[0].unit = "";
-			this.questionStore.updatedQuestion.options[1].unit = "";
+			this.multipleChoices[0].unit = "";
+			this.multipleChoices[1].unit = "";
+			this.$emit("updateOptions", this.multipleChoices);
 		},
 		data: () => ({
-			questionStore: useQuestionStore(),
 			dialog: false,
 			insertText: "",
+			multipleChoices: [],
 			indexLoc: -1,
 			selected: ["A"],
 			required: [(v) => !!v || "Required"],
 		}),
 		methods: {
+			updateProp() {
+				for (let i = 0; i < this.options.length; i++) {
+					console.log(this.options[i]);
+					console.log(this.options[i].id);
+					this.multipleChoices[i].id = this.options[i].id;
+					this.multipleChoices[i].question_id = this.options[0].question_id;
+				}
+				this.$emit("updateOptions", this.multipleChoices);
+			},
 			addMultipleChoiceOption() {
 				const option = {
-					letter: String.fromCharCode(
-						65 + this.questionStore.updatedQuestion.options.length
-					),
+					letter: String.fromCharCode(65 + this.multipleChoices.length),
 					content: "",
 					image: "",
 					is_answer: false,
 				};
 
-				this.questionStore.updatedQuestion.options.push(option);
+				this.multipleChoices.push(option);
+				this.updateProp();
 			},
 
 			deleteMultipleChoiceOption(index) {
-				this.questionStore.updatedQuestion.options.splice(index, 1);
+				this.multipleChoices.splice(index, 1);
 				let start = 65;
-				this.questionStore.updatedQuestion.options.forEach((choice) => {
+				this.multipleChoices.forEach((choice) => {
 					choice.letter = String.fromCharCode(start++);
 				});
 			},
@@ -175,15 +201,13 @@
 				if (file && this.indexLoc != -1) {
 					let files = file.target.files;
 					if (files.length == 0) {
-						this.questionStore.updatedQuestion.options[this.indexLoc].image =
-							"";
+						this.multipleChoices[this.indexLoc].image = "";
 					} else {
 						let fileName = files[0].name;
 						const reader = new FileReader();
 						reader.readAsDataURL(files[0]);
 						reader.onloadend = () => {
-							this.questionStore.updatedQuestion.options[this.indexLoc].image =
-								reader.result;
+							this.multipleChoices[this.indexLoc].image = reader.result;
 						};
 					}
 				}
@@ -224,7 +248,7 @@
 				const before = sentence.substr(0, pos);
 				const after = sentence.substr(pos, len);
 
-				this.questionStore.updatedQuestion.options[this.indexLoc].content =
+				this.multipleChoices[this.indexLoc].content =
 					before + insertText + after;
 
 				this.$nextTick().then(() => {
@@ -235,7 +259,7 @@
 
 		computed: {
 			listenForAnswer: function () {
-				this.questionStore.updatedQuestion.options.forEach((choice) => {
+				this.multipleChoices.forEach((choice) => {
 					if (this.selected.includes(choice.letter)) {
 						choice.is_answer = true;
 					} else {

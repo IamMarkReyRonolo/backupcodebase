@@ -1,7 +1,7 @@
 <template>
 	<div class="createQuestion">
 		{{ getQuestionData }}
-		{{ listenForChanges }}
+
 		<div class="largeConView" v-if="this.$vuetify.breakpoint.width > 1000">
 			<v-navigation-drawer
 				v-model="drawer"
@@ -145,8 +145,6 @@
 	import Snackbar from "../../components/GeneralModals/Snackbar.vue";
 	import ConfirmDialog from "../../components/GeneralModals/Confirm.vue";
 	import QuestionsAPI from "../../api/QuestionsAPI";
-	import { useQuestionStore } from "../../store/QuestionStore";
-
 	export default {
 		components: {
 			UpdateSection,
@@ -155,27 +153,15 @@
 			Snackbar,
 			ConfirmDialog,
 		},
+		props: {
+			data: Object,
+		},
 
 		created() {
-			this.question_data = JSON.parse(
-				JSON.stringify(this.questionStore.chosenQuestion)
-			);
+			const token = JSON.parse(localStorage.getItem("token"));
+			const data = token;
 
-			this.questionStore.updatedQuestion = Object.assign(
-				{},
-				this.questionStore.chosenQuestion
-			);
-			this.questionMetadata = this.question_data.metadata;
-			this.questionDetails = Object.keys(this.question_data).reduce(
-				(obj, k) => {
-					if (k != "metadata") obj[k] = this.question_data[k];
-					return obj;
-				},
-				{}
-			);
-
-			console.log(this.questionMetadata);
-			console.log(this.questionDetails);
+			this.question_data = JSON.parse(JSON.stringify(this.data));
 		},
 
 		mounted() {
@@ -185,12 +171,9 @@
 		},
 
 		data: () => ({
-			questionStore: useQuestionStore(),
 			drawer: true,
 			mini: false,
 			question: {},
-			questionMetadata: {},
-			questionDetails: {},
 			metaData: { empty: true },
 			question_main_details: {},
 			proceed: false,
@@ -209,7 +192,6 @@
 			openBurger: false,
 			overlay: false,
 		}),
-
 		methods: {
 			selectAuthor(mode) {
 				this.confirmSubmission = true;
@@ -226,7 +208,6 @@
 					this.submitQuestion();
 				}
 			},
-
 			getQuestionMetaData(metaData) {
 				let question = metaData;
 				this.metaData = metaData;
@@ -237,16 +218,12 @@
 				this.question = question;
 				this.is_proceed();
 			},
-
 			getQuestionDetails(details) {
 				this.question.response_type = details.response_type;
 				this.question.question_content = details.question_content;
 				this.question.question_img = details.question_image;
 
-				if (
-					this.question.question_content !=
-					this.questionStore.chosenQuestion.question_content
-				) {
+				if (this.question.question_content != this.data.question_content) {
 					this.question_content_modified = true;
 				} else {
 					this.question_content_modified = false;
@@ -256,10 +233,7 @@
 					this.question.question_img = null;
 				}
 
-				if (
-					this.question.question_img !=
-					this.questionStore.chosenQuestion.question_img
-				) {
+				if (this.question.question_img != this.data.question_img) {
 					this.question_image_modified = true;
 				} else {
 					this.question_image_modified = false;
@@ -321,14 +295,11 @@
 				Object.entries(this.question).forEach(([key, value]) => {
 					if (key in this.question_data) {
 						if (key != "options") {
-							if (this.questionStore.chosenQuestion[key] != value) {
+							if (this.data[key] != value) {
 								this.has_modified = true;
 							}
 						} else {
-							if (
-								JSON.stringify(value) !=
-								JSON.stringify(this.questionStore.chosenQuestion[key])
-							) {
+							if (JSON.stringify(value) != JSON.stringify(this.data[key])) {
 								this.has_modified = true;
 							}
 						}
@@ -580,15 +551,6 @@
 					this.clickNav("open");
 				} else {
 					this.clickNav("close");
-				}
-			},
-
-			listenForChanges: function () {
-				if (
-					JSON.stringify(this.questionStore.updatedQuestion) !=
-					JSON.stringify(this.questionStore.chosenQuestion)
-				) {
-					console.log("occur some changes");
 				}
 			},
 		},

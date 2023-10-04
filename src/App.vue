@@ -1,6 +1,11 @@
 <template>
 	<v-app class="mainApp">
 		<v-main>
+<<<<<<< HEAD
+=======
+		hello
+		heyy
+>>>>>>> 2eda0f732de79e6a99045b4b244b4bb3866b9bf1
 			<router-view />
 		</v-main>
 	</v-app>

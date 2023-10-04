@@ -34,32 +34,18 @@
 							:text="!questionsSelected"
 							@click="select('questions')"
 							to="/staff/questions"
-							id="verifiedQuestionsNavBtn"
+							id="viewQuestionsNavBtn"
 							block
 							tile
 							large
-							><span class="vtext">Verified Questions</span></v-btn
+							><span class="vtext">All Questions</span></v-btn
 						>
-
-						<v-btn
-							color="#253759"
-							dark
-							:text="!pendingSelected"
-							@click="select('pending')"
-							to="/staff/pending"
-							id="pendingQuestionsNavBtn"
-							block
-							tile
-							large
-							><span class="vtext">Pending Questions</span></v-btn
-						>
-
 						<v-btn
 							color="#253759"
 							dark
 							:text="!createSelected"
 							@click="select('create')"
-							to="/staff/question_creation"
+							to="/staff/create"
 							id="createQuestionNavBtn"
 							block
 							tile
@@ -106,26 +92,15 @@
 						:text="!questionsSelected"
 						@click="select('questions')"
 						to="/staff/questions"
-						id="verifiedQuestionsNavBtn"
-						><span class="vtext">Verfied Questions</span></v-btn
+						id="viewQuestionsNavBtn"
+						><span class="vtext">All Questions</span></v-btn
 					>
-
-					<v-btn
-						color="#253759"
-						dark
-						:text="!pendingSelected"
-						@click="select('pending')"
-						to="/staff/pending"
-						id="pendingQuestionsNavBtn"
-						><span class="vtext">Pending Questions</span></v-btn
-					>
-
 					<v-btn
 						color="#253759"
 						dark
 						:text="!createSelected"
 						@click="select('create')"
-						to="/staff/question_creation"
+						to="/staff/create"
 						id="createQuestionNavBtn"
 						><span class="vtext">Create Question</span></v-btn
 					>
@@ -224,7 +199,6 @@
 			dashboardSelected: true,
 			createSelected: false,
 			questionsSelected: false,
-			pendingSelected: false,
 			peopleSelected: false,
 			drawer: false,
 			activateEditProfileModal: false,
@@ -240,7 +214,6 @@
 					this.dashboardSelected = true;
 					this.createSelected = false;
 					this.questionsSelected = false;
-					this.pendingSelected = false;
 					this.peopleSelected = false;
 				}
 
@@ -248,7 +221,6 @@
 					this.dashboardSelected = false;
 					this.createSelected = true;
 					this.questionsSelected = false;
-					this.pendingSelected = false;
 					this.peopleSelected = false;
 				}
 
@@ -256,15 +228,6 @@
 					this.dashboardSelected = false;
 					this.createSelected = false;
 					this.questionsSelected = true;
-					this.pendingSelected = false;
-					this.peopleSelected = false;
-				}
-
-				if (selected == "pending" && !this.pendingSelected) {
-					this.dashboardSelected = false;
-					this.createSelected = false;
-					this.questionsSelected = false;
-					this.pendingSelected = true;
 					this.peopleSelected = false;
 				}
 
@@ -272,7 +235,6 @@
 					this.dashboardSelected = false;
 					this.createSelected = false;
 					this.questionsSelected = false;
-					this.pendingSelected = false;
 					this.peopleSelected = true;
 				}
 			},
@@ -336,29 +298,18 @@
 					this.dashboardSelected = true;
 					this.createSelected = false;
 					this.questionsSelected = false;
-					this.pendingSelected = false;
 					this.peopleSelected = false;
 				}
-				if (this.$route.name == "question_creation") {
+				if (this.$route.name == "create-question") {
 					this.dashboardSelected = false;
 					this.createSelected = true;
 					this.questionsSelected = false;
-					this.pendingSelected = false;
 					this.peopleSelected = false;
 				}
 				if (this.$route.name == "questions") {
 					this.dashboardSelected = false;
 					this.createSelected = false;
 					this.questionsSelected = true;
-					this.pendingSelected = false;
-					this.peopleSelected = false;
-				}
-
-				if (this.$route.name == "pending") {
-					this.dashboardSelected = false;
-					this.createSelected = false;
-					this.questionsSelected = false;
-					this.pendingSelected = true;
 					this.peopleSelected = false;
 				}
 
@@ -366,7 +317,6 @@
 					this.dashboardSelected = false;
 					this.createSelected = false;
 					this.questionsSelected = false;
-					this.pendingSelected = false;
 					this.peopleSelected = true;
 				}
 			},
@@ -389,8 +339,8 @@
 	}
 
 	.navigations {
-		padding: 20px 50px;
-		padding-bottom: 10px;
+		padding: 20px 40px;
+		padding-bottom: 0px;
 		display: flex;
 		align-items: center;
 	}
@@ -414,7 +364,7 @@
 		flex-direction: column;
 	}
 
-	@media only screen and (max-width: 1050px) {
+	@media only screen and (max-width: 900px) {
 		.lineNav {
 			display: none;
 		}

@@ -1,6 +1,6 @@
 <template>
 	<div class="headerSection">
-		<h1 style="font-weight: 500">Verified Questions</h1>
+		<h1 style="font-weight: 500">View Questions</h1>
 		<div class="typeSelectionDiv">
 			<div class="btnCon largeView" v-for="(type, index) in qType" :key="index">
 				<v-btn
